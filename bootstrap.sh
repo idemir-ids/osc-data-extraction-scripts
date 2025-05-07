@@ -4,7 +4,7 @@
 # Copyright 2024 The Linux Foundation
 
 # Repository location to update/refresh scripts
-CLONE_HTTPS="https://github.com/os-climate/osc-data-extraction-scripts.git"
+CLONE_HTTPS="https://github.com/idemir-ids/osc-data-extraction-scripts.git"
 
 SUDO_CMD=$(which sudo)
 WHOAMI=$(whoami)
@@ -124,11 +124,11 @@ else
   echo "NFS mount unavailable"; exit 1
 fi
 
-if [ ! -d osc-data-extraction-scripts ]; then
-  echo "Updating scripts from repository:"
-  echo "$CLONE_HTTPS"
-  $SUDO_CMD git clone --quiet "$CLONE_HTTPS"
-fi
+# Always get fresh copy from github
+rm -rf /osc/data-extraction/osc-data-extraction-scripts
+echo "Updating scripts from repository:"
+echo "$CLONE_HTTPS"
+$SUDO_CMD git clone --quiet "$CLONE_HTTPS"
 
 if [ ! -f script.sh ]; then
   echo "Creating symlink for: script.sh"

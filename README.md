@@ -31,7 +31,7 @@ Scripts to build/deploy the OS-Climate data extraction tooling
 SSH to the EC2 instance, download the bootstrap.sh script, then run it:
 
 ```console
-wget https://raw.githubusercontent.com/os-climate/osc-data-extraction-scripts/refs/heads/main/bootstrap.sh
+wget https://raw.githubusercontent.com/idemir-ids/osc-data-extraction-scripts/refs/heads/main/bootstrap.sh
 chmod a+x bootstrap.sh
 ./bootstrap.sh
 ```
