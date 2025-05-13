@@ -23,12 +23,15 @@ set -e
 set -o pipefail
 
 # Update package lists quietly
+echo "Updating package lists..."
 apt-get update -qq
 
 # Install Lighttpd quietly, suppressing output
+echo "Installing Lighttpd..."
 apt-get install -qq lighttpd > /dev/null 2>&1
 
 # Enable directory listing in Lighttpd configuration
+echo "Configuring Lighttpd"
 echo 'server.modules += ( "mod_dirlisting" )' >> "$LIGHTTPD_CONF"
 echo 'dir-listing.activate = "enable"' >> "$LIGHTTPD_CONF"
 
@@ -36,6 +39,7 @@ echo 'dir-listing.activate = "enable"' >> "$LIGHTTPD_CONF"
 rm -f "$SERVER_DIR"/*
 
 # Create directories for storing input and output files
+echo "Create directories for storing input and output files"
 mkdir -p "$DATA_EXTRACTION_DIR/inputs_www"
 mkdir -p "$DATA_EXTRACTION_DIR/outputs_www"
 
@@ -49,3 +53,6 @@ ln -s "$DATA_EXTRACTION_DIR/outputs_www" "$SERVER_DIR/outputs_www"
 
 # Restart Lighttpd service to apply configuration changes
 service lighttpd restart
+
+# Print success message
+echo "Lighttpd is installed and configured to serve $SERVE_DIR with directory listing enabled."

@@ -83,6 +83,17 @@ cd /data-extraction
 
 The full operation of this script is described below.
 
+For easy file access, there is also a webserver available. You can install and
+run it by doing:
+
+```console
+cd /data-extraction
+./websrv.sh
+```
+
+It will create two directories at /data-extraction, where you can copy input and
+output files (inputs_www and outputs_www).
+
 Alternatively, to directly invoke the primary data processing script in the
 container, you can instead use the full Docker command below:
 

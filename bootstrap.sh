@@ -145,7 +145,7 @@ BASE_DIR=$(basename "$CURRENT_DIR")
 if [ "$BASE_DIR" = "data-extraction" ]; then
   echo "Starting Ubuntu Docker container..."
   # By default starts an interactive shell inside container
-  docker run -v "$PWD":/data-extraction -ti ubuntu:24.04 /bin/bash
+  docker run -v "$PWD":/data-extraction -ti -p 80:80 ubuntu:24.04 /bin/bash
   # Non-interactive goes directly to data processing
   # docker run -v "$PWD":/data-extraction -ti ubuntu:22.04 /bin/bash /data-extraction/script.sh
 else
