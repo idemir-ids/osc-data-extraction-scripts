@@ -22,6 +22,7 @@ Scripts to build/deploy the OS-Climate data extraction tooling
 | publish.sh   | Thin shell script/wrapper publish the Docker container to a registry              |
 | run.sh       | Thin shell script/wrapper ro run the Docker container                             |
 | script.sh    | Script copied into the Docker container; uses GNU parallel to run data extraction |
+| websrv.sh    | Script copied into the Docker container; setup web server for easy file access    |
 | tag.sh       | Thin shell script/wrapper to tag the container with metadata                      |
 
 <!-- markdownlint-enable MD013 -->
