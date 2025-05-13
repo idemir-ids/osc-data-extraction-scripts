@@ -109,6 +109,7 @@ fi
 # Setup the Python virtual environment if not already present
 if [ ! -d "/osc/venv" ]; then
   echo "Installing required python packages for OSC toolchain"
+  apt-get update -qq
   apt-get install -qq python3.12-venv > /dev/null 2>&1
   mkdir -p /osc/venv
   python3 -m venv /osc/venv

@@ -125,7 +125,7 @@ else
 fi
 
 # Always get fresh copy from github
-rm -rf /osc/data-extraction/osc-data-extraction-scripts
+$SUDO_CMD rm -rf /osc/data-extraction/osc-data-extraction-scripts
 echo "Updating scripts from repository:"
 echo "$CLONE_HTTPS"
 $SUDO_CMD git clone --quiet "$CLONE_HTTPS"
@@ -133,6 +133,11 @@ $SUDO_CMD git clone --quiet "$CLONE_HTTPS"
 if [ ! -f script.sh ]; then
   echo "Creating symlink for: script.sh"
   $SUDO_CMD ln -s osc-data-extraction-scripts/script.sh script.sh
+fi
+
+if [ ! -f websrv.sh ]; then
+  echo "Creating symlink for: websrv.sh"
+  $SUDO_CMD ln -s osc-data-extraction-scripts/websrv.sh websrv.sh
 fi
 
 CURRENT_DIR=$(pwd)
