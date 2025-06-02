@@ -26,16 +26,35 @@ SELECTION="e151f*.pdf"    # File selection pattern, example: "e15*.pdf"
 
 # Function to run the OSC pipeline
 _run_osc_pipeline() {
-    local input_dir="$1"  # Input directory for the pipeline
-    local output_dir="$2" # Output directory for the pipeline
-    local log_dir="$3"    # Log directory for the pipeline
+    local input_dir="$1"      # Input directory for the pipeline
+    local output_dir="$2"     # Output directory for the pipeline
+    local log_dir="$3"        # Log directory for the pipeline
+    local rb_work_dir="$4"    # Work directory for rule-based extraction
+    
+    
+    ##### OSC Transformer Presteps ###
+    echo "OSC Transformer Presteps" 
     
     # Activate the Python virtual environment
     source /osc/venv_presteps/bin/activate
     
-    # Run the extraction pipeline
+    # Run the osc-transformer-presteps
     echo "extraction run-local-extraction '$input_dir' --output-folder='$output_dir' --logs-folder='$log_dir' --force"
     osc-transformer-presteps extraction run-local-extraction "$input_dir" --output-folder="$output_dir" --logs-folder="$log_dir" --force
+    
+    # Deactivate the virtual environment
+    deactivate
+    
+    
+    ##### OSC Rule-based KPI Extraction ###
+    echo "OSC Rule-based KPI Extraction" 
+    
+    # Activate the Python virtual environment
+    source /osc/venv_rb/bin/activate
+    
+    # Run the rule-based-extractor
+    echo "osc-rule-based-extractor --pdftohtml_mod_executable /osc/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder '$input_dir' --working_folder '$rb_work_dir' --output_folder '$output_dir' --verbosity 1 > '$log_dir/rb.log'"
+    osc-rule-based-extractor --pdftohtml_mod_executable /osc/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder "$input_dir" --working_folder "$rb_work_dir" --output_folder "$output_dir" --verbosity 1 > "$log_dir/rb.log"
     
     # Deactivate the virtual environment
     deactivate
@@ -59,13 +78,14 @@ _process_files() {
     local input_dir="$temp_dir/input"
     local output_dir="$temp_dir/output"
     local log_dir="$temp_dir/log"
-    mkdir -p "$input_dir" "$output_dir" "$log_dir"
+    local rb_work_dir="$temp_dir/rb_work"
+    mkdir -p "$input_dir" "$output_dir" "$log_dir" "$rb_work_dir"
     
     # Copy the file to the input directory
     cp "$filename" "$input_dir/$base_filename"
     
     # Run the pipeline on the file
-    _run_osc_pipeline "$input_dir" "$output_dir" "$log_dir"
+    _run_osc_pipeline "$input_dir" "$output_dir" "$log_dir" "$rb_work_dir"
     
     # Check if the output directory exists and copy contents to the target directory
     if [ -d "$output_dir" ]; then
@@ -112,9 +132,9 @@ if [ ! -d "/osc/venv_presteps" ]; then
   apt-get update -qq
   apt-get install -qq python3.12-venv_presteps > /dev/null 2>&1
   mkdir -p /osc/venv_presteps
-  python3.12 -m venv_presteps /osc/venv_presteps
+  python3.12 -m venv /osc/venv_presteps
   source /osc/venv_presteps/bin/activate
-  pip3.12 install osc-transformer-presteps
+  pip3.12 install osc-transformer-presteps  > /dev/null 2>&1
   deactivate
 fi
 
