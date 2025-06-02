@@ -31,7 +31,7 @@ _run_osc_pipeline() {
     local log_dir="$3"    # Log directory for the pipeline
     
     # Activate the Python virtual environment
-    source /osc/venv/bin/activate
+    source /osc/venv_presteps/bin/activate
     
     # Run the extraction pipeline
     echo "extraction run-local-extraction '$input_dir' --output-folder='$output_dir' --logs-folder='$log_dir' --force"
@@ -106,16 +106,42 @@ if ! (which parallel > /dev/null 2>&1); then
   apt-get install -qq parallel > /dev/null 2>&1
 fi
 
-# Setup the Python virtual environment if not already present
-if [ ! -d "/osc/venv" ]; then
-  echo "Installing required python packages for OSC toolchain"
+# Setup osc-transformer-presteps
+if [ ! -d "/osc/venv_presteps" ]; then
+  echo "Installing osc-transformer-presteps"
   apt-get update -qq
-  apt-get install -qq python3.12-venv > /dev/null 2>&1
-  mkdir -p /osc/venv
-  python3 -m venv /osc/venv
-  source /osc/venv/bin/activate
-  pip3 install osc-transformer-presteps
+  apt-get install -qq python3.12-venv_presteps > /dev/null 2>&1
+  mkdir -p /osc/venv_presteps
+  python3.12 -m venv_presteps /osc/venv_presteps
+  source /osc/venv_presteps/bin/activate
+  pip3.12 install osc-transformer-presteps
   deactivate
+fi
+
+# Setup osc-rule-based-extractor
+if [ ! -d "/osc/venv_rb" ]; then
+  echo "Installing osc-rule-based-extractor"
+  CURDIR=$(pwd)
+  apt-get update -qq
+  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata  > /dev/null 2>&1
+  apt-get install -qq git  > /dev/null 2>&1
+  apt-get install -qq python3.12-venv > /dev/null 2>&1
+  mkdir -p /osc
+  cd /osc
+  git clone --quiet https://github.com/idemir-ids/osc-xpdf-mod
+  git clone --quiet https://github.com/idemir-ids/osc-rule-based-extractor
+  mkdir -p /osc/venv_rb
+  python3.12 -m venv /osc/venv_rb
+  apt-get install -qq software-properties-common  > /dev/null 2>&1
+  apt-get install -qq wget gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig  > /dev/null 2>&1
+  dpkg -i /osc/osc-rule-based-extractor/res/libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb > /dev/null 2>&1
+  chmod +x /osc/osc-xpdf-mod/bin/pdftohtml_mod
+  source /osc/venv_rb/bin/activate
+  cd /osc/osc-rule-based-extractor
+  pip3.12 install pdm  > /dev/null 2>&1
+  pdm sync
+  deactivate
+  cd "$CURDIR"
 fi
 
 # Display number of parallel threads
