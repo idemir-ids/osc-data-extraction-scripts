@@ -131,7 +131,7 @@ fi
 if [ ! -d "/osc/venv_presteps" ]; then
   echo "Installing osc-transformer-presteps"
   apt-get update -qq
-  apt-get install -qq python3.12-venv_presteps > /dev/null 2>&1
+  apt-get install -qq python3.12-venv > /dev/null 2>&1
   mkdir -p /osc/venv_presteps
   python3.12 -m venv /osc/venv_presteps
   source /osc/venv_presteps/bin/activate
