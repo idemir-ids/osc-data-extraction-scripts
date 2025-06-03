@@ -40,7 +40,8 @@ _run_osc_pipeline() {
     
     # Run the osc-transformer-presteps
     echo "extraction run-local-extraction '$input_dir' --output-folder='$output_dir' --logs-folder='$log_dir' --force"
-    osc-transformer-presteps extraction run-local-extraction "$input_dir" --output-folder="$output_dir" --logs-folder="$log_dir" --force
+    echo "This is skipped because we dont need it for RB for now" # TODO : Very slow for e15dc57a77884d11a9d0d19116e4800d.pdf
+    #osc-transformer-presteps extraction run-local-extraction "$input_dir" --output-folder="$output_dir" --logs-folder="$log_dir" --force
     
     # Deactivate the virtual environment
     deactivate
