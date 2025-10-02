@@ -155,7 +155,9 @@ if [ ! -d "/osc/venv_rb" ]; then
   python3.12 -m venv /osc/venv_rb
   apt-get install -qq software-properties-common  > /dev/null 2>&1
   apt-get install -qq wget gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig  > /dev/null 2>&1
-  dpkg -i /osc/osc-rule-based-extractor/res/libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb > /dev/null 2>&1
+  wget http://ppa.launchpad.net/linuxuprising/libpng12/ubuntu/pool/main/libp/libpng/libpng12-0_1.2.54-1ubuntu1.1+1~ppa0~eoan_amd64.deb
+  dpkg -i /osc/libpng12-0_1.2.54-1ubuntu1.1+1~ppa0~eoan_amd64.deb > /dev/null 2>&1
+  #dpkg -i /osc/osc-rule-based-extractor/res/libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb > /dev/null 2>&1
   chmod +x /osc/osc-xpdf-mod/bin/pdftohtml_mod
   source /osc/venv_rb/bin/activate
   cd /osc/osc-rule-based-extractor
