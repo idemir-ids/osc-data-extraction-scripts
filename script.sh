@@ -54,8 +54,8 @@ _run_osc_pipeline() {
     source /osc/venv_rb/bin/activate
     
     # Run the rule-based-extractor
-    echo "osc-rule-based-extractor --pdftohtml_mod_executable /osc/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder '$input_dir' --working_folder '$rb_work_dir' --output_folder '$output_dir' --verbosity 1 > '$log_dir/rb.log'"
-    osc-rule-based-extractor --pdftohtml_mod_executable /osc/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder "$input_dir" --working_folder "$rb_work_dir" --output_folder "$output_dir" --verbosity 1 > "$log_dir/rb.log"
+    echo "osc-rule-based-extractor --pdftohtml_mod_executable /osc/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder '$input_dir' --working_folder '$rb_work_dir' --output_folder '$output_dir' --verbosity 0 > '$log_dir/rb.log' 2>/dev/null"
+    osc-rule-based-extractor --pdftohtml_mod_executable /osc/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder "$input_dir" --working_folder "$rb_work_dir" --output_folder "$output_dir" --verbosity 0 > "$log_dir/rb.log" 2>/dev/null
     
     # Deactivate the virtual environment
     deactivate
@@ -165,6 +165,7 @@ if [ ! -d "/osc/venv_rb" ]; then
   cd "$CURDIR"
 fi
 
+
 # Display number of parallel threads
 echo "Parallel threads for batch processing: $THREADS"
 
@@ -173,11 +174,10 @@ START=$(date '+%s')
 
 # Display number of input files to process
 echo -n "Input files to process: "
-FILES=$(ls $SOURCE/$SELECTION) # List files matching the selection pattern
-echo "$FILES" | wc -l
+find "$SOURCE" -type f -name "$SELECTION" | wc -l
 
 # Process files in parallel using the specified number of threads
-echo "$FILES" | parallel -j "$THREADS" _process_files {} "$TARGET"
+find "$SOURCE" -type f -name "$SELECTION" | parallel -j "$THREADS" _process_files {} "$TARGET"
 
 # Record end time and calculate elapsed time
 END=$(date '+%s')
