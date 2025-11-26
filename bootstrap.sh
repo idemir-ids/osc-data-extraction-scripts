@@ -137,6 +137,11 @@ if [ ! -f websrv.sh ]; then
   $SUDO_CMD ln -s osc-data-extraction-scripts/websrv.sh websrv.sh
 fi
 
+if [ ! -f install.sh ]; then
+  echo "Creating symlink for: install.sh"
+  $SUDO_CMD ln -s osc-data-extraction-scripts/install.sh install.sh
+fi
+
 CURRENT_DIR=$(pwd)
 BASE_DIR=$(basename "$CURRENT_DIR")
 if [ "$BASE_DIR" = "osc" ]; then
