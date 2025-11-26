@@ -168,14 +168,14 @@ if [ ! -d "/data-extraction/venv_rb" ]; then
   python3.12 -m venv /data-extraction/venv_rb
   apt-get install -qq software-properties-common  > /dev/null 2>&1
   apt-get install -qq wget gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig  > /dev/null 2>&1
-  wget http://ppa.launchpad.net/linuxuprising/libpng12/ubuntu/pool/main/libp/libpng/libpng12-0_1.2.54-1ubuntu1.1+1~ppa0~eoan_amd64.deb
+  wget -q http://ppa.launchpad.net/linuxuprising/libpng12/ubuntu/pool/main/libp/libpng/libpng12-0_1.2.54-1ubuntu1.1+1~ppa0~eoan_amd64.deb
   dpkg -i /data-extraction/libpng12-0_1.2.54-1ubuntu1.1+1~ppa0~eoan_amd64.deb > /dev/null 2>&1
   #dpkg -i /data-extraction/osc-rule-based-extractor/res/libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb > /dev/null 2>&1
   chmod +x /data-extraction/osc-xpdf-mod/bin/pdftohtml_mod
   source /data-extraction/venv_rb/bin/activate
   cd /data-extraction/osc-rule-based-extractor
   pip install pdm  > /dev/null 2>&1
-  pdm -q -n sync
+  pdm sync -q
   deactivate
   cd "$CURDIR"
 fi
@@ -199,9 +199,9 @@ if [ ! -d "/data-extraction/venv_tb" ]; then
   python3.12 -m venv /data-extraction/venv_tb
   source /data-extraction/venv_tb/bin/activate
   cd /data-extraction/osc-transformer-based-extractor/
-  pip install pdm  > /dev/null 2>&1
-  pdm -q -n lock
-  pdm -q -n sync
+  pip install pdm > /dev/null 2>&1
+  pdm lock -q
+  pdm sync -q
   deactivate
   cd "$CURDIR"
 fi
