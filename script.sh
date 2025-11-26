@@ -36,12 +36,11 @@ _run_osc_pipeline() {
     echo "OSC Transformer Presteps" 
     
     # Activate the Python virtual environment
-    source /osc/venv_presteps/bin/activate
+    source /data-extraction/venv_presteps/bin/activate
     
-    # Run the osc-transformer-presteps
+    # Run the osc-transformer-presteps ( TODO : Very slow for e15dc57a77884d11a9d0d19116e4800d.pdf )
     echo "extraction run-local-extraction '$input_dir' --output-folder='$output_dir' --logs-folder='$log_dir' --force"
-    echo "This is skipped because we dont need it for RB for now" # TODO : Very slow for e15dc57a77884d11a9d0d19116e4800d.pdf
-    #osc-transformer-presteps extraction run-local-extraction "$input_dir" --output-folder="$output_dir" --logs-folder="$log_dir" --force
+    osc-transformer-presteps extraction run-local-extraction "$input_dir" --output-folder="$output_dir" --logs-folder="$log_dir" --force
     
     # Deactivate the virtual environment
     deactivate
@@ -51,14 +50,28 @@ _run_osc_pipeline() {
     echo "OSC Rule-based KPI Extraction" 
     
     # Activate the Python virtual environment
-    source /osc/venv_rb/bin/activate
+    source /data-extraction/venv_rb/bin/activate
     
     # Run the rule-based-extractor
-    echo "osc-rule-based-extractor --pdftohtml_mod_executable /osc/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder '$input_dir' --working_folder '$rb_work_dir' --output_folder '$output_dir' --verbosity 0 > '$log_dir/rb.log' 2>/dev/null"
-    osc-rule-based-extractor --pdftohtml_mod_executable /osc/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder "$input_dir" --working_folder "$rb_work_dir" --output_folder "$output_dir" --verbosity 0 > "$log_dir/rb.log" 2>/dev/null
+    echo "osc-rule-based-extractor --pdftohtml_mod_executable /data-extraction/data-extraction-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder '$input_dir' --working_folder '$rb_work_dir' --output_folder '$output_dir' --verbosity 0 > '$log_dir/rb.log' 2>/dev/null"
+    osc-rule-based-extractor --pdftohtml_mod_executable /data-extraction/data-extraction-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder "$input_dir" --working_folder "$rb_work_dir" --output_folder "$output_dir" --verbosity 0 > "$log_dir/rb.log" 2>/dev/null
     
     # Deactivate the virtual environment
     deactivate
+
+
+    ##### OSC Transformer-based KPI Extraction ###
+    echo "OSC Transformer-based KPI Extraction" 
+    
+    # Activate the Python virtual environment
+    source /data-extraction/venv_tb/bin/activate
+    
+    # Run the transformer-based-extractor
+    
+    
+    # Deactivate the virtual environment
+    deactivate
+
 }
 
 # Export the function for use with parallel
@@ -96,7 +109,7 @@ _process_files() {
     fi
     
     # Clean up: remove the temporary directory
-    rm -rf "$temp_dir"
+    #rm -rf "$temp_dir"
 }
 
 # Export the function for use with parallel
@@ -128,40 +141,66 @@ if ! (which parallel > /dev/null 2>&1); then
 fi
 
 # Setup osc-transformer-presteps
-if [ ! -d "/osc/venv_presteps" ]; then
+if [ ! -d "/data-extraction/venv_presteps" ]; then
   echo "Installing osc-transformer-presteps"
   apt-get update -qq
   apt-get install -qq python3.12-venv > /dev/null 2>&1
-  mkdir -p /osc/venv_presteps
-  python3.12 -m venv /osc/venv_presteps
-  source /osc/venv_presteps/bin/activate
+  mkdir -p /data-extraction/venv_presteps
+  python3.12 -m venv /data-extraction/venv_presteps
+  source /data-extraction/venv_presteps/bin/activate
   pip3.12 install osc-transformer-presteps  > /dev/null 2>&1
   deactivate
 fi
 
 # Setup osc-rule-based-extractor
-if [ ! -d "/osc/venv_rb" ]; then
+if [ ! -d "/data-extraction/venv_rb" ]; then
   echo "Installing osc-rule-based-extractor"
   CURDIR=$(pwd)
   apt-get update -qq
   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata  > /dev/null 2>&1
   apt-get install -qq git  > /dev/null 2>&1
   apt-get install -qq python3.12-venv > /dev/null 2>&1
-  mkdir -p /osc
-  cd /osc
+  mkdir -p /data-extraction
+  cd /data-extraction
   git clone --quiet https://github.com/idemir-ids/osc-xpdf-mod
   git clone --quiet https://github.com/idemir-ids/osc-rule-based-extractor
-  mkdir -p /osc/venv_rb
-  python3.12 -m venv /osc/venv_rb
+  mkdir -p /data-extraction/venv_rb
+  python3.12 -m venv /data-extraction/venv_rb
   apt-get install -qq software-properties-common  > /dev/null 2>&1
   apt-get install -qq wget gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig  > /dev/null 2>&1
   wget http://ppa.launchpad.net/linuxuprising/libpng12/ubuntu/pool/main/libp/libpng/libpng12-0_1.2.54-1ubuntu1.1+1~ppa0~eoan_amd64.deb
-  dpkg -i /osc/libpng12-0_1.2.54-1ubuntu1.1+1~ppa0~eoan_amd64.deb > /dev/null 2>&1
-  #dpkg -i /osc/osc-rule-based-extractor/res/libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb > /dev/null 2>&1
-  chmod +x /osc/osc-xpdf-mod/bin/pdftohtml_mod
-  source /osc/venv_rb/bin/activate
-  cd /osc/osc-rule-based-extractor
+  dpkg -i /data-extraction/libpng12-0_1.2.54-1ubuntu1.1+1~ppa0~eoan_amd64.deb > /dev/null 2>&1
+  #dpkg -i /data-extraction/osc-rule-based-extractor/res/libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb > /dev/null 2>&1
+  chmod +x /data-extraction/osc-xpdf-mod/bin/pdftohtml_mod
+  source /data-extraction/venv_rb/bin/activate
+  cd /data-extraction/osc-rule-based-extractor
   pip3.12 install pdm  > /dev/null 2>&1
+  pdm sync
+  deactivate
+  cd "$CURDIR"
+fi
+
+if [ ! -d "/data-extraction/venv_tb" ]; then
+  echo "Installing osc-transformer-based-extractor"
+  CURDIR=$(pwd)
+  apt-get update -qq
+  apt-get install -qq git
+  apt-get install -qq python3.12-venv > /dev/null 2>&1
+  mkdir -p /data-extraction/venv_tb
+  
+  #### Auto install from PyPy, not currently used:
+  #python3.12 -m venv /data-extraction/venv_tb
+  #source /data-extraction/venv_tb/bin/activate
+  # pip3.12 install osc-transformer-based-extractor  > /dev/null 2>&1 ##not currently used
+  
+  #### Manual install from github:
+  cd /data-extraction
+  git clone https://github.com/idemir-ids/osc-transformer-based-extractor
+  python3.12 -m venv /data-extraction/venv_tb
+  source /data-extraction/venv_tb/bin/activate
+  cd /data-extraction/osc-transformer-based-extractor/
+  pip install pdm
+  pdm lock
   pdm sync
   deactivate
   cd "$CURDIR"

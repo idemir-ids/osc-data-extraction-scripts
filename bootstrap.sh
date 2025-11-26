@@ -106,26 +106,23 @@ then
   echo "Creating /etc/fstab entry for NFS mount"
   $SUDO_CMD cp /etc/fstab /tmp/fstab
   $SUDO_CMD chmod a+w /tmp/fstab
-  echo "fs-0abca58dcce09a51a.efs.eu-west-2.amazonaws.com:/                        /osc         nfs4   defaults,noatime  0   0" >> /tmp/fstab
+  #echo "fs-0abca58dcce09a51a.efs.eu-west-2.amazonaws.com:/                        /osc         nfs4   defaults,noatime  0   0" >> /tmp/fstab
+  echo "fs-047e784aa20f258fa.efs.us-east-1.amazonaws.com:/ /osc/data-extraction nfs4 defaults,_netdev,rsize=1048576,wsize=1048576,hard,intr,timeo=600 0 0" >> /tmp/fstab
   $SUDO_CMD mv /tmp/fstab /etc/fstab
   $SUDO_CMD chmod og-w /etc/fstab
 fi
 
-if [ ! -d /osc/data-extraction ]; then
+if [ ! mountpoint -q /osc/data-extraction ]; then
   echo "Mounting EFS/NFS mount"
   $SUDO_CMD systemctl daemon-reload
-  $SUDO_CMD mount /osc
+  $SUDO_CMD mount /osc/data-extraction
 fi
 
-# Navigate to EFS/NFS mount location
-if [ -d /osc/data-extraction ]; then
-  cd /osc/data-extraction || exit
-else
-  echo "NFS mount unavailable"; exit 1
-fi
+# Navigate to osc base folder
+cd /osc
 
 # Always get fresh copy from github
-$SUDO_CMD rm -rf /osc/data-extraction/osc-data-extraction-scripts
+$SUDO_CMD rm -rf /osc/osc-data-extraction-scripts
 echo "Updating scripts from repository:"
 echo "$CLONE_HTTPS"
 $SUDO_CMD git clone --quiet "$CLONE_HTTPS"
@@ -142,12 +139,12 @@ fi
 
 CURRENT_DIR=$(pwd)
 BASE_DIR=$(basename "$CURRENT_DIR")
-if [ "$BASE_DIR" = "data-extraction" ]; then
+if [ "$BASE_DIR" = "osc" ]; then
   echo "Starting Ubuntu Docker container..."
   # By default starts an interactive shell inside container
-  docker run -v "$PWD":/data-extraction -ti -p 80:80 ubuntu:24.04 /bin/bash
+  docker run --gpus all -v "$PWD":/osc -ti -p 80:80 ubuntu:24.04 /bin/bash
   # Non-interactive goes directly to data processing
-  # docker run -v "$PWD":/data-extraction -ti ubuntu:22.04 /bin/bash /data-extraction/script.sh
+  # docker run --gpus all -v "$PWD":/osc -ti ubuntu:22.04 /bin/bash /osc/script.sh
 else
     echo "Error: invoke the script from mounted data-extraction folder"; exit 1
 fi
