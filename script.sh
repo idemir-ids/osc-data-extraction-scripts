@@ -148,7 +148,7 @@ if [ ! -d "/data-extraction/venv_presteps" ]; then
   mkdir -p /data-extraction/venv_presteps
   python3.12 -m venv /data-extraction/venv_presteps
   source /data-extraction/venv_presteps/bin/activate
-  pip3.12 install osc-transformer-presteps  > /dev/null 2>&1
+  pip install osc-transformer-presteps  > /dev/null 2>&1
   deactivate
 fi
 
@@ -175,7 +175,7 @@ if [ ! -d "/data-extraction/venv_rb" ]; then
   source /data-extraction/venv_rb/bin/activate
   cd /data-extraction/osc-rule-based-extractor
   pip install pdm  > /dev/null 2>&1
-  pdm sync
+  pdm -q -n sync
   deactivate
   cd "$CURDIR"
 fi
@@ -191,7 +191,7 @@ if [ ! -d "/data-extraction/venv_tb" ]; then
   #### Auto install from PyPy, not currently used:
   #python3.12 -m venv /data-extraction/venv_tb
   #source /data-extraction/venv_tb/bin/activate
-  # pip3.12 install osc-transformer-based-extractor  > /dev/null 2>&1 ##not currently used
+  # pip install osc-transformer-based-extractor  > /dev/null 2>&1 ##not currently used
   
   #### Manual install from github:
   cd /data-extraction
