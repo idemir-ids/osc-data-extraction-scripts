@@ -174,7 +174,7 @@ if [ ! -d "/data-extraction/venv_rb" ]; then
   chmod +x /data-extraction/osc-xpdf-mod/bin/pdftohtml_mod
   source /data-extraction/venv_rb/bin/activate
   cd /data-extraction/osc-rule-based-extractor
-  pip3.12 install pdm  > /dev/null 2>&1
+  pip install pdm  > /dev/null 2>&1
   pdm sync
   deactivate
   cd "$CURDIR"
@@ -199,9 +199,9 @@ if [ ! -d "/data-extraction/venv_tb" ]; then
   python3.12 -m venv /data-extraction/venv_tb
   source /data-extraction/venv_tb/bin/activate
   cd /data-extraction/osc-transformer-based-extractor/
-  pip install pdm
-  pdm lock
-  pdm sync
+  pip install pdm  > /dev/null 2>&1
+  pdm -q -n lock
+  pdm -q -n sync
   deactivate
   cd "$CURDIR"
 fi
