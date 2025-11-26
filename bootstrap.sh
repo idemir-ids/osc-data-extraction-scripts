@@ -112,7 +112,7 @@ then
   $SUDO_CMD chmod og-w /etc/fstab
 fi
 
-if [ ! mountpoint -q /osc/data-extraction ]; then
+if ! mountpoint -q /osc/data-extraction; then
   echo "Mounting EFS/NFS mount"
   $SUDO_CMD systemctl daemon-reload
   $SUDO_CMD mount /osc/data-extraction
