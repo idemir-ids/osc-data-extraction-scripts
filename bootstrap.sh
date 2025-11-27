@@ -132,6 +132,11 @@ if [ ! -f script.sh ]; then
   $SUDO_CMD ln -s osc-data-extraction-scripts/script.sh script.sh
 fi
 
+if [ ! -f train.sh ]; then
+  echo "Creating symlink for: train.sh"
+  $SUDO_CMD ln -s osc-data-extraction-scripts/train.sh train.sh
+fi
+
 if [ ! -f websrv.sh ]; then
   echo "Creating symlink for: websrv.sh"
   $SUDO_CMD ln -s osc-data-extraction-scripts/websrv.sh websrv.sh
