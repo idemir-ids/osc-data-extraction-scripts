@@ -16,13 +16,78 @@ set -o pipefail
 ### Variables
 
 # Folder location of input PDF files and output files on EFS/NFS mount
-SOURCE="inputs"  # Source directory for input files
-TARGET="outputs"     # Target directory for output files
+SOURCE="inputs_www"  # Source directory for input files
+TARGET="outputs_www"     # Target directory for output files
 
 # Wildcard that selects the number of files to process
-SELECTION="e151f*.pdf"    # File selection pattern, example: "e15*.pdf"
+SELECTION="*.pdf"    # File selection pattern, example: "e15*.pdf"
 
 ### Functions
+
+# Function to merge output files
+_merge_files() {
+    # Exit on error
+    set -e
+
+    local FOLDER="$1"
+
+    # Check if folder exists
+    if [ ! -d "$FOLDER" ]; then
+        echo "Error: Folder '$FOLDER' does not exist"
+        return 1
+    fi
+
+    # Change to the folder (in a subshell to preserve current directory)
+    (
+        cd "$FOLDER"
+
+        echo "Working in folder: $(pwd)"
+
+        # Find and delete the xlsx file ending with "_unverified"
+        local UNVERIFIED_FILE=$(find . -maxdepth 1 -name "*_unverified.xlsx" -type f | head -n 1)
+        if [ -n "$UNVERIFIED_FILE" ]; then
+            echo "Deleting: $UNVERIFIED_FILE"
+            rm "$UNVERIFIED_FILE"
+        else
+            echo "Warning: No file ending with '_unverified.xlsx' found"
+        fi
+
+        # Find and remember the CSV file name
+        local CSV_FILE=$(find . -maxdepth 1 -name "*.csv" -type f | head -n 1)
+        if [ -z "$CSV_FILE" ]; then
+            echo "Error: No CSV file found"
+            return 1
+        fi
+
+        # Remove the ./ prefix if present
+        CSV_FILE=$(basename "$CSV_FILE")
+        echo "Found CSV file: $CSV_FILE"
+        local ORIGINAL_CSV_NAME="$CSV_FILE"
+
+        # Find the remaining xlsx file (not the unverified one)
+        local XLSX_FILE=$(find . -maxdepth 1 -name "*.xlsx" -type f | head -n 1)
+        if [ -z "$XLSX_FILE" ]; then
+            echo "Error: No XLSX file found"
+            return 1
+        fi
+
+        XLSX_FILE=$(basename "$XLSX_FILE")
+        echo "Found XLSX file: $XLSX_FILE"
+
+        # Rename the files
+        echo "Renaming '$CSV_FILE' to '000-input.csv'"
+        mv "$CSV_FILE" "000-input.csv"
+
+        echo "Renaming '$XLSX_FILE' to '000-input.xlsx'"
+        mv "$XLSX_FILE" "000-input.xlsx"
+
+        # Run the doit.sh command
+        echo "Running: doit.sh 000-input.csv 000-input.xlsx $ORIGINAL_CSV_NAME"
+        osc-transformer-presteps run_merge_output 000-input.csv 000-input.xlsx "$ORIGINAL_CSV_NAME"
+
+        echo "Done!"
+    )
+}
 
 # Function to run the OSC pipeline
 _run_osc_pipeline() {
@@ -30,6 +95,7 @@ _run_osc_pipeline() {
     local output_dir="$2"     # Output directory for the pipeline
     local log_dir="$3"        # Log directory for the pipeline
     local rb_work_dir="$4"    # Work directory for rule-based extraction
+    local tb_work_dir="$5"    # Work directory for transformer-based extraction
     
     
     ##### OSC Transformer Presteps ###
@@ -39,7 +105,7 @@ _run_osc_pipeline() {
     source /data-extraction/venv_presteps/bin/activate
     
     # Run the osc-transformer-presteps ( TODO : Very slow for e15dc57a77884d11a9d0d19116e4800d.pdf )
-    echo "extraction run-local-extraction '$input_dir' --output-folder='$output_dir' --logs-folder='$log_dir' --force"
+    echo "osc-transformer-presteps extraction run-local-extraction '$input_dir' --output-folder='$output_dir' --logs-folder='$log_dir' --force"
     osc-transformer-presteps extraction run-local-extraction "$input_dir" --output-folder="$output_dir" --logs-folder="$log_dir" --force
     
     # Deactivate the virtual environment
@@ -53,8 +119,8 @@ _run_osc_pipeline() {
     source /data-extraction/venv_rb/bin/activate
     
     # Run the rule-based-extractor
-    echo "osc-rule-based-extractor --pdftohtml_mod_executable /data-extraction/data-extraction-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder '$input_dir' --working_folder '$rb_work_dir' --output_folder '$output_dir' --verbosity 0 > '$log_dir/rb.log' 2>/dev/null"
-    osc-rule-based-extractor --pdftohtml_mod_executable /data-extraction/data-extraction-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder "$input_dir" --working_folder "$rb_work_dir" --output_folder "$output_dir" --verbosity 0 > "$log_dir/rb.log" 2>/dev/null
+    echo "osc-rule-based-extractor --pdftohtml_mod_executable /data-extraction/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder '$input_dir' --working_folder '$rb_work_dir' --output_folder '$output_dir' --verbosity 0 > '$log_dir/rb.log' 2>/dev/null"
+    osc-rule-based-extractor --pdftohtml_mod_executable /data-extraction/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder "$input_dir" --working_folder "$rb_work_dir" --output_folder "$output_dir" --verbosity 0 > "$log_dir/rb.log" 2>/dev/null
     
     # Deactivate the virtual environment
     deactivate
@@ -68,9 +134,23 @@ _run_osc_pipeline() {
     
     # Run the transformer-based-extractor
     
+    echo "Step 1: Run relevance inference"
+    mkdir -p "$tb_work_dir/infer_output"
+    echo "osc-transformer-based-extractor relevance-detector inference '$output_dir' '/data-extraction/tb_files/curation/input/kpi_mapping.csv' '$tb_work_dir/infer_output' '/data-extraction/tb_files/relevance/saved_model/rel_model' '/data-extraction/tb_files/relevance/saved_model/rel_model' 16 0.5"
+    osc-transformer-based-extractor relevance-detector inference "$output_dir" "/data-extraction/tb_files/curation/input/kpi_mapping.csv" "$tb_work_dir/infer_output" "/data-extraction/tb_files/relevance/saved_model/rel_model" "/data-extraction/tb_files/relevance/saved_model/rel_model" 16 0.5
     
+    echo "Step 2: Run KPI inference"
+    mkdir -p "$tb_work_dir/kpidetect/input"
+    cp "$tb_work_dir/infer_output/combined_inference/"*.xlsx "$tb_work_dir/kpidetect/input/rel_results.xlsx"
+    
+    echo "osc-transformer-based-extractor kpi-detection inference '$tb_work_dir/kpidetect/input/rel_results.xlsx' '$output_dir/' '/data-extraction/tb_files/kpidetect/saved_model/model01'"
+    osc-transformer-based-extractor kpi-detection inference "$tb_work_dir/kpidetect/input/rel_results.xlsx" "$output_dir/" "/data-extraction/tb_files/kpidetect/saved_model/model01"
+
+
     # Deactivate the virtual environment
     deactivate
+
+    _merge_files "$output_dir/"
 
 }
 
@@ -93,13 +173,14 @@ _process_files() {
     local output_dir="$temp_dir/output"
     local log_dir="$temp_dir/log"
     local rb_work_dir="$temp_dir/rb_work"
-    mkdir -p "$input_dir" "$output_dir" "$log_dir" "$rb_work_dir"
+    local tb_work_dir="$temp_dir/tb_work"
+    mkdir -p "$input_dir" "$output_dir" "$log_dir" "$rb_work_dir" "$tb_work_dir"
     
     # Copy the file to the input directory
     cp "$filename" "$input_dir/$base_filename"
     
     # Run the pipeline on the file
-    _run_osc_pipeline "$input_dir" "$output_dir" "$log_dir" "$rb_work_dir"
+    _run_osc_pipeline "$input_dir" "$output_dir" "$log_dir" "$rb_work_dir" "$tb_work_dir"
     
     # Check if the output directory exists and copy contents to the target directory
     if [ -d "$output_dir" ]; then
@@ -121,7 +202,7 @@ if [ ! -x "$NPROC_CMD" ]; then
     echo "Error: nproc command not found in PATH"
     exit 1
 fi
-THREADS=$($NPROC_CMD) # Number of threads for parallel processing
+THREADS=1 #$($NPROC_CMD) # Number of threads for parallel processing
 
 # Install if not already installed
 chmod +x install.sh
@@ -141,8 +222,15 @@ START=$(date '+%s')
 echo -n "Input files to process: "
 find "$SOURCE" -type f -name "$SELECTION" | wc -l
 
-# Process files in parallel using the specified number of threads
-find "$SOURCE" -type f -name "$SELECTION" | parallel -j "$THREADS" _process_files {} "$TARGET"
+# Choose any one of the following (other comment out!)
+
+# 1) Process files in parallel using the specified number of threads
+# find "$SOURCE" -type f -name "$SELECTION" | parallel -j "$THREADS" _process_files {} "$TARGET"
+
+# 2) Process files sequentially as alternative for debugging
+find "$SOURCE" -type f -name "$SELECTION" | while read -r file; do
+  _process_files "$file" "$TARGET"
+done
 
 # Record end time and calculate elapsed time
 END=$(date '+%s')

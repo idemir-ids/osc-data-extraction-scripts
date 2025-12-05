@@ -34,13 +34,21 @@ fi
 # Setup osc-transformer-presteps
 if [ ! -d "/data-extraction/venv_presteps" ]; then
   echo "Installing osc-transformer-presteps"
+  CURDIR=$(pwd)
   apt-get update -qq
   apt-get install -qq python3.12-venv > /dev/null 2>&1
   mkdir -p /data-extraction/venv_presteps
+  cd /data-extraction  
+  git clone --quiet https://github.com/idemir-ids/osc-transformer-presteps
   python3.12 -m venv /data-extraction/venv_presteps
   source /data-extraction/venv_presteps/bin/activate
-  pip install osc-transformer-presteps  > /dev/null 2>&1
+  #pip install osc-transformer-presteps  > /dev/null 2>&1
+  cd /data-extraction/osc-transformer-presteps
+  pip install pdm tox  > /dev/null 2>&1
+  pdm lock -q
+  pdm sync -q
   deactivate
+  cd "$CURDIR"
 fi
 
 # Setup osc-rule-based-extractor
