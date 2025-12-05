@@ -119,8 +119,8 @@ _run_osc_pipeline() {
     source /data-extraction/venv_rb/bin/activate
     
     # Run the rule-based-extractor
-    echo "osc-rule-based-extractor --pdftohtml_mod_executable /data-extraction/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder '$input_dir' --working_folder '$rb_work_dir' --kpi_folder '/data-extraction/rb_data/kpi_specs' --output_folder '$output_dir' --verbosity 0 > '$log_dir/rb.log' 2>/dev/null"
-    osc-rule-based-extractor --pdftohtml_mod_executable /data-extraction/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder "$input_dir" --working_folder "$rb_work_dir" --kpi_folder "/data-extraction/rb_data/kpi_specs" --output_folder "$output_dir" --verbosity 0 > "$log_dir/rb.log" 2>/dev/null
+    echo "osc-rule-based-extractor --pdftohtml_mod_executable /data-extraction/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder '$input_dir' --working_folder '$rb_work_dir' --kpi_folder '/data-extraction/rb_files/kpi_specs' --output_folder '$output_dir' --verbosity 0 > '$log_dir/rb.log' 2>/dev/null"
+    osc-rule-based-extractor --pdftohtml_mod_executable /data-extraction/osc-xpdf-mod/bin/pdftohtml_mod --raw_pdf_folder "$input_dir" --working_folder "$rb_work_dir" --kpi_folder "/data-extraction/rb_files/kpi_specs" --output_folder "$output_dir" --verbosity 0 > "$log_dir/rb.log" 2>/dev/null
     
     # Deactivate the virtual environment
     deactivate
