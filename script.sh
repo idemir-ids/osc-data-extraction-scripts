@@ -81,9 +81,15 @@ _merge_files() {
         echo "Renaming '$XLSX_FILE' to '000-input.xlsx'"
         mv "$XLSX_FILE" "000-input.xlsx"
 
-        # Run the doit.sh command
-        echo "Running: doit.sh 000-input.csv 000-input.xlsx $ORIGINAL_CSV_NAME"
+        # Activate the Python virtual environment
+        source /data-extraction/venv_presteps/bin/activate
+
+        # Run merge command
+        echo "osc-transformer-presteps run_merge_output 000-input.csv 000-input.xlsx '$ORIGINAL_CSV_NAME'"
         osc-transformer-presteps run_merge_output 000-input.csv 000-input.xlsx "$ORIGINAL_CSV_NAME"
+
+        # Deactivate the virtual environment
+        deactivate
 
         echo "Done!"
     )
