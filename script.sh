@@ -91,6 +91,10 @@ _merge_files() {
         # Deactivate the virtual environment
         deactivate
 
+        # Delete temporary files
+        rm 000-input.csv 2>/dev/null
+        rm 000-input.xlsx 2>/dev/null
+
         echo "Done!"
     )
 }
