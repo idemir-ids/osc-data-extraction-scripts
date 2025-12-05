@@ -85,8 +85,8 @@ _merge_files() {
         source /data-extraction/venv_presteps/bin/activate
 
         # Run merge command
-        echo "osc-transformer-presteps run_merge_output 000-input.csv 000-input.xlsx '$ORIGINAL_CSV_NAME'"
-        osc-transformer-presteps run_merge_output 000-input.csv 000-input.xlsx "$ORIGINAL_CSV_NAME"
+        echo "osc-transformer-presteps merge-output run-merge-output 000-input.csv 000-input.xlsx '$ORIGINAL_CSV_NAME'"
+        osc-transformer-presteps merge-output run-merge-output 000-input.csv 000-input.xlsx "$ORIGINAL_CSV_NAME"
 
         # Deactivate the virtual environment
         deactivate
