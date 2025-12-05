@@ -76,7 +76,7 @@ if [ ! -d "/data-extraction/venv_rb" ]; then
   pip install pdm  > /dev/null 2>&1
   pdm sync -q
   deactivate
-  if [!-d "/data-extraction/rb_data"]; then
+  if [ ! -d "/data-extraction/rb_data"]; then
     # Copy default KPIs for RB method
     mkdir -p /data-extraction/rb_data/kpi_specs
     cp /data-extraction/osc-rule-based-extractor/res/kpi_specs_demo/*.yaml /data-extraction/rb_data/kpi_specs/
