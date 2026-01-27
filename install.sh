@@ -37,6 +37,7 @@ if [ ! -d "/data-extraction/venv_presteps" ]; then
   CURDIR=$(pwd)
   apt-get update -qq
   apt-get install -qq python3.12-venv > /dev/null 2>&1
+  apt-get install -qq git  > /dev/null 2>&1
   mkdir -p /data-extraction/venv_presteps
   cd /data-extraction  
   git clone --quiet https://github.com/idemir-ids/osc-transformer-presteps
