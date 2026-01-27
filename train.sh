@@ -72,7 +72,7 @@ function curate_input_data() {
   rm /data-extraction/tb_files/curation/output/Curated_dataset*.csv 2> /dev/null # delete old curation data
   source /data-extraction/venv_presteps/bin/activate
   cd /data-extraction/tb_files/curation/
-  osc-transformer-presteps relevance-curation run-local-curation --create_neg_samples 'input/' 'input/test_annotations.xlsx' 'input/kpi_mapping.csv' 'output/'
+  osc-transformer-presteps relevance-curation run-local-curation --create_neg_samples --neg_sample_rate 10 'input/' 'input/test_annotations.xlsx' 'input/kpi_mapping.csv' 'output/'
   deactivate
   echo "Copying curation output into training input (Curated_dataset.csv)"
   # there is only such csv file, so the following command will work
