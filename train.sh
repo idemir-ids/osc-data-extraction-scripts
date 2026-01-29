@@ -105,6 +105,29 @@ function train_relevance_detector() {
   echo "Done. You may now continue with training KPI detector."
 }
 
+## === LEGACY ====
+#function train_kpi_detector() {
+#  echo "Training KPI detector..."
+#  CURDIR=$(pwd)
+#  source /data-extraction/venv_tb/bin/activate
+#  cd /data-extraction/tb_files/kpidetect
+#  osc-transformer-based-extractor kpi-detection fine-tune \
+#      "input/Curated_dataset.csv" \
+#      "bert-base-uncased" \
+#      128 \
+#      7 \
+#      16 \
+#      5e-5 \
+#      "saved_model/" \
+#      "model01" \
+#      500
+#  deactivate
+#  cd "$CURDIR"
+#  echo "======================================================================================"
+#  echo "Congratulations! We are now ready for inference. :-) "
+#}
+
+
 function train_kpi_detector() {
   echo "Training KPI detector..."
   CURDIR=$(pwd)
@@ -112,8 +135,8 @@ function train_kpi_detector() {
   cd /data-extraction/tb_files/kpidetect
   osc-transformer-based-extractor kpi-detection fine-tune \
       "input/Curated_dataset.csv" \
-      "bert-base-uncased" \
-      128 \
+      "deepset/bert-base-uncased-squad2" \
+      512 \
       3 \
       16 \
       5e-5 \
@@ -125,6 +148,7 @@ function train_kpi_detector() {
   echo "======================================================================================"
   echo "Congratulations! We are now ready for inference. :-) "
 }
+
 
 function show_menu() {
   echo ""
