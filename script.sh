@@ -16,8 +16,8 @@ set -o pipefail
 ### Variables
 
 # Folder location of input PDF files and output files on EFS/NFS mount
-SOURCE="inputs_www"  # Source directory for input files
-TARGET="outputs_www"     # Target directory for output files
+SOURCE="inputs"  # Source directory for input files
+TARGET="outputs"     # Target directory for output files
 
 # Wildcard that selects the number of files to process
 SELECTION="*.pdf"    # File selection pattern, example: "e15*.pdf"
@@ -151,7 +151,9 @@ _run_osc_pipeline() {
     
     echo "Step 2: Run KPI inference"
     mkdir -p "$tb_work_dir/kpidetect/input"
-    cp "$tb_work_dir/infer_output/combined_inference/"*.xlsx "$tb_work_dir/kpidetect/input/rel_results.xlsx"
+    if [ -f "$tb_work_dir/infer_output/combined_inference/"*.xlsx ]; then
+        cp "$tb_work_dir/infer_output/combined_inference/"*.xlsx "$tb_work_dir/kpidetect/input/rel_results.xlsx"
+    fi
     
     echo "osc-transformer-based-extractor kpi-detection inference '$tb_work_dir/kpidetect/input/rel_results.xlsx' '$output_dir/' '/data-extraction/tb_files/kpidetect/saved_model/model01'"
     osc-transformer-based-extractor kpi-detection inference "$tb_work_dir/kpidetect/input/rel_results.xlsx" "$output_dir/" "/data-extraction/tb_files/kpidetect/saved_model/model01"
@@ -200,7 +202,7 @@ _process_files() {
     fi
     
     # Clean up: remove the temporary directory
-    #rm -rf "$temp_dir"
+    rm -rf "$temp_dir"
 }
 
 # Export the function for use with parallel
