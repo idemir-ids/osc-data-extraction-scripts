@@ -24,7 +24,22 @@ osc-data-extraction-scripts
 OSC Data Extraction (Ubuntu/Debian + NVIDIA GPU)
 ================================================
 
-This README provides a step-by-step guide to set up and run the OSC data extraction workflow inside a Docker container on Ubuntu/Debian systems with an NVIDIA GPU. It preserves the original command sequence exactly while adding clearer explanations and structure.
+Introduction
+------------
+
+The OS‑Climate Data Extraction Pipeline transforms long, complex PDF reports into structured KPI datasets ready for use in the OS‑Climate (OSC) platform. The pipeline targets sustainability and climate disclosures that often mix narrative text with dense tables and varied layouts. Its aim is to automate and standardize KPI capture at scale while preserving the context needed for traceability and review.
+
+At the core of the system are two complementary extraction engines that mirror how humans read reports: a transformer‑based component excels at understanding free‑flowing text and longer sentences, while a rule‑based component is optimized for structured tables and spatially aligned data. Outputs from both are harmonized into a single CSV, resolving overlaps so users receive one clean, consolidated view of KPIs per document. This unified approach balances precision with coverage across the diverse formats found in real‑world disclosures.
+
+The transformer path is trained to both find and extract. One model assesses paragraph relevance for a given KPI, filtering the document to the most promising passages; a second model then extracts the KPI value or qualitative statement, along with supporting text. Training relies on curated annotations drawn from actual PDF content and benefits from transfer learning with pre‑trained BERT‑based models, making fine‑tuning efficient even with modest labeled datasets when GPU acceleration is available. Model artifacts are stored with their weights and tokenizer configurations to enable straightforward reuse and retraining as requirements evolve.
+
+The rule‑based path takes a deterministic approach that shines in clean, well‑structured tables. It combines predefined rules, regular expressions, and spatial layout cues derived from a customized xpdf workflow that preserves coordinates during rendering. By matching against explicit KPI definitions, the extractor can return the KPI name, value, unit (where present), and year with high precision, providing a reliable counterpoint to the transformer’s strengths in narrative text.
+
+Engineered for throughput and robustness, the pipeline is designed to process on the order of thousands of reports per day (for documents up to roughly a hundred pages) on standard hardware. Its modular architecture isolates components so that changes in document styles or KPI definitions can be accommodated without destabilizing the overall system. Just as importantly, the outputs maintain transparency: each extracted KPI links back to the paragraph and page it came from, enabling rapid human verification and iterative improvement of rules, models, and training data over time.
+
+Together, these design choices make the pipeline a practical bridge from heterogeneous PDF disclosures to consistent, analyzable KPI datasets.
+
+The remainder of this README guides you through setting up the GPU‑enabled environment, training the transformer models with your annotations, running both extraction paths, and producing the unified CSV outputs for downstream analysis within the OS‑Climate ecosystem.
 
 What you will do
 ----------------
